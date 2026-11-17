@@ -1,0 +1,49 @@
+# Codemagic workflow for building Just Cold Shop APK
+workflows:
+  just-cold-shop-apk:
+    name: Just Cold Shop APK Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      java: 17
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+    scripts:
+      - name: Setup project & gradle props
+        script: |
+          set -e
+          flutter --version
+          flutter config --no-analytics
+
+          # Give Gradle enough memory and AndroidX support
+          echo "org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=1G" >> android/gradle.properties
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
+
+          flutter pub get
+          echo "=== Setup OK ==="
+      - name: Accept Android SDK licenses
+        script: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+      - name: Build release APK
+        script: |
+          set -e
+          flutter build apk --release
+
+          ls -la build/app/outputs/flutter-apk/
+
+          # Copy APK to repository root
+          cp build/app/outputs/flutter-apk/app-release.apk JustColdShop.apk
+          ls -la JustColdShop.apk
+          echo "=== APK READY ==="
+    artifacts:
+      - JustColdShop.apk
+      - build/app/outputs/flutter-apk/*.apk
+    publishing:
+      email:
+        recipients:
+          - ashikmolla9721@gmail.com
+        notify:
+          success: true
+          failure: true
