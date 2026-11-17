@@ -10,11 +10,14 @@ workflows:
       cache_paths:
         - $HOME/.gradle/caches
     scripts:
-      - name: Setup project & gradle props
+      - name: Setup project & dependencies
         script: |
           set -e
           flutter --version
           flutter config --no-analytics
+
+          # Ensure Android platform is properly configured
+          flutter create . --org com.justcoldshop --project-name justcoldshop_app --platforms android
 
           # Give Gradle enough memory and AndroidX support
           echo "org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=1G" >> android/gradle.properties
@@ -43,7 +46,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - ashikmolla9721@gmail.com
+          - ashikbd9421@gmail.com
         notify:
           success: true
           failure: true
